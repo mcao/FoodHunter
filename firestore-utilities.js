@@ -272,7 +272,7 @@ let dbutilities = (function() {
     auth = authUser(user, token);
     if (auth.status != 200) return auth;
     try {
-      newRef = await fdb.collection('spaces').add(donation);
+      newRef = await fdb.collection('spaces').add(space);
       fdb
         .collection('users')
         .doc(user.toLowerCase())
@@ -358,7 +358,6 @@ let dbutilities = (function() {
     } catch(err) {
       return{status: 500, message: err.message};
     }
-
   }
 
   async function assignDonationToSpace(user, token, donation_id, space_id) {
