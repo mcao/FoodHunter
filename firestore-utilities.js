@@ -31,19 +31,18 @@ let dbutilities = (function() {
   }
 
   async function authUser(user, token) {
-    const tokenRef =  
-    fdb
-     .collection('sessions')
-     .doc('active')
-     .collection('tokens')
-     .doc(token);
+    const tokenRef = fdb
+      .collection('sessions')
+      .doc('active')
+      .collection('tokens')
+      .doc(token);
 
-     try {
-       let doc = await tokenRef.get();
-       return (doc.data.username == user);
-     } catch (err) {
-       return false;
-     }
+    try {
+      let doc = await tokenRef.get();
+      return doc.data.username == user;
+    } catch (err) {
+      return false;
+    }
   }
 
   async function createNewUser(user, hashed_pw) {
@@ -57,13 +56,16 @@ let dbutilities = (function() {
       }
 
       var date = getCurrDate();
-   
-      fdb.collection('auth').doc(user.toLowerCase()).set({
-        username: user,
-        password: hashed_pw,
-        date_created: date,
-        last_login: date
-      });
+
+      fdb
+        .collection('auth')
+        .doc(user.toLowerCase())
+        .set({
+          username: user,
+          password: hashed_pw,
+          date_created: date,
+          last_login: date
+        });
 
       var newToken = token();
 
@@ -71,7 +73,7 @@ let dbutilities = (function() {
         .collection('users')
         .doc(user.toLowerCase())
         .set({ username: user, token: newToken, verified: false });
-     
+
       return newToken;
     } catch (err) {
       console.log(err);
@@ -84,12 +86,12 @@ let dbutilities = (function() {
     try {
       let userDoc = await userRef.get();
       if (!userDoc.exists) {
-        console.log("invalid user");
+        console.log('invalid user');
         return false;
       }
       let data = userDoc.data();
       if (data.password !== hashed_pw) {
-        console.log("incorrect pw");
+        console.log('incorrect pw');
         return false;
       }
 
@@ -101,12 +103,12 @@ let dbutilities = (function() {
         .doc(newToken)
         .set({ username: user });
 
-        var date = getCurrDate();
-      
-        fdb
-          .collection("auth")
-          .doc(user.toLowerCase())
-          .update({last_login: date});
+      var date = getCurrDate();
+
+      fdb
+        .collection('auth')
+        .doc(user.toLowerCase())
+        .update({ last_login: date });
       console.log(newToken);
       return newToken;
     } catch (err) {
@@ -115,42 +117,53 @@ let dbutilities = (function() {
   }
 
   async function doLogout(user, token) {
-    const tokenRef = 
+    const tokenRef = fdb
+      .collection('sessions')
+      .doc('active')
+      .collection('tokens')
+      .doc(token);
+    try {
+      let doc = await tokenRef.get();
+      if (!doc.exists) {
+        console.log('no such token');
+        return false;
+      }
+      if (!(doc.data().username === user)) {
+        console.log('wrong username');
+        return false;
+      } //can't logout on someone else's behalf
+      var date = getCurrDate();
       fdb
         .collection('sessions')
-        .doc('active')
+        .doc('expired')
         .collection('tokens')
-        .doc(token);
-      try {
-        let doc = await tokenRef.get();
-        if(!doc.exists) {console.log("no such token"); return false;}
-        if(!(doc.data().username === user)) {console.log("wrong username"); return false;} //can't logout on someone else's behalf
-        var date = getCurrDate();
-        fdb
-          .collection('sessions')
-          .doc('expired')
-          .collection('tokens')
-          .doc(token).set({username: user, expiry: date});
-        
-          tokenRef.delete();
+        .doc(token)
+        .set({ username: user, expiry: date });
 
-          return true;
-      } catch (err) {
-          return false;
-      }
+      tokenRef.delete();
+
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 
   async function verifyUser(user, token) {
     const userRef = fdb.collection('users').doc(user.toLowerCase());
     try {
       let doc = await userRef.get();
-      if(!(doc.data().token == token)) { console.log("bad token!"); return false; }
-      if(doc.data().verified == true) { console.log("already verified!");  return false; }
-      userRef.update({verified: true});
+      if (!(doc.data().token == token)) {
+        console.log('bad token!');
+        return 'ERROR: Bad Token';
+      }
+      if (doc.data().verified == true) {
+        console.log('already verified!');
+        return 'ERROR: Already Verified!';
+      }
+      userRef.update({ verified: true });
       return true;
-      
-    } catch(err) {
-      return false;
+    } catch (err) {
+      return 'ERROR: ' + err.message;
     }
   }
 
@@ -172,13 +185,13 @@ let dbutilities = (function() {
   return {
     db: fdb,
     checkAuth: authUser,
-    createUser: createNewUser,
+    createUser: createNewUser, //implemented
     getDonations: getAllDonations,
     getSpaces: getAllSpaces,
     getUsers: getAllUsers,
     login: doLogin,
     logout: doLogout,
-    verify: verifyUser
+    verify: verifyUser //implemented
   };
 })();
 

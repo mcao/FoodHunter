@@ -30,6 +30,25 @@ app.get('/', function(req, res) {
 });
 
 /**
+ * @route /verify/<token>
+ * @description Allows users to verify their email and allow themselves full functionality.
+ * @version 1.0.0
+ */
+app.post('/verify/:user.:token', async function(req, res) {
+  let user = req.params.user;
+  let token = req.params.token;
+  let verified = await firestoreDB.verify(user, token);
+  if (verified == true && typeof verified != String) {
+    res.send({
+      status: 200,
+      response: `${user} has successfully been verified. Thank you!`
+    });
+  } else {
+    res.send({ status: 500, response: verified });
+  }
+});
+
+/**
  * @route /api/v1/status
  * @description Checks status of the API and ensures all services are running.
  * @version 1.0.0
@@ -48,7 +67,6 @@ app.get('/api/v1/status', function(req, res) {
  * @version 1.0.0
  */
 app.post('/api/v1/register', async function(req, res) {
-  console.log(req.query);
   if (!req.query.username || !req.query.password)
     return res.send('Must provide username and password!');
 
@@ -66,9 +84,11 @@ app.post('/api/v1/register', async function(req, res) {
     return res.sendStatus(500);
   } else {
     utils.sendVerificationEmail(req.query.username, userToken);
-    return res.send(
-      'Thank you for registering for Food Sharing Service. Please check your email for an email from pennappsxx@gmail.com to verify your account.'
-    );
+    return res.send({
+      status: 200,
+      response:
+        'Thank you for registering for Food Sharing Service. Please check your email for an email from pennappsxx@gmail.com to verify your account.'
+    });
   }
 });
 
@@ -77,7 +97,48 @@ app.post('/api/v1/register', async function(req, res) {
  * @description Allows user to login to the application and allows app to begin full functionality.
  * @version 1.0.0
  */
-app.post('/api/v1/login', function(req, res) {});
+app.post('/api/v1/login', async function(req, res) {
+  if (!req.query.username || !req.query.password)
+    return res.send('Must provide username and password!');
+
+  let hashedPassword = await utils.hashPassword(req.query.password);
+  let sessionToken = await firestoreDB.login(
+    req.query.username,
+    hashedPassword
+  );
+
+  if (!sessionToken) {
+    return res.sendStatus(500);
+  } else {
+    return res.send({
+      status: 200,
+      response: 'Successfully logged in! Welcome back to Food Service Sharing.',
+      session_token: sessionToken
+    });
+  }
+});
+
+/**
+ * @route /api/v1/logout
+ * @description Allows user to securely log out of the application and end their session.
+ * @version 1.0.0
+ */
+app.get('/api/v1/logout', async function(req, res) {
+  if (!req.query.username || !req.query.token)
+    return res.send('Must provide username and session token!');
+
+  let loggedout = await firestoreDB.logout(req.query.username.req.query.token);
+
+  if (!loggedout) {
+    return res.sendStatus(500);
+  } else {
+    return res.send({
+      status: 200,
+      response: 'Successfully logged out! See you next time.',
+      session_token: sessionToken
+    });
+  }
+});
 
 app.get('/api/v1/food/all', function(req, res) {});
 

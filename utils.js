@@ -9,4 +9,6 @@ exports.verifyPassword = async function(password, hashedPassword) {
   return await bcrypt.compare(password, hashedPassword);
 };
 
-exports.sendVerificationEmail = async function(email, token) {};
+exports.sendVerificationEmail = async function(email, token) {
+  // Use node-mailer to email them a link to verify
+};
