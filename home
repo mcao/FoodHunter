@@ -1,0 +1,73 @@
+import * as React from 'react';
+import { Text, View, StyleSheet, TouchableOpacity} from 'react-native';
+import { Button} from 'react-bootstrap';
+
+import Constants from 'expo-constants';
+
+// You can import from local files
+import Icon from './components/Icon'
+import Bar from './components/Bar'
+
+// or any pure javascript modules available in npm
+import { Card } from 'react-native-paper';
+
+export default class Home extends React.Component  {
+
+  render() {
+
+    const marginTop = 10;
+    console.log("HERE");
+
+    const colorOne = "#FF00FF"
+    const colorTwo = "#FF00FF"
+    const { navigate } = this.props.navigation;
+
+
+    return (
+      
+        <View style={styles.container}> 
+        <View style={{marginTop: marginTop}}>
+         <Icon  />
+        </View> 
+        <View style={styles.bottom}> 
+
+        <TouchableOpacity onPress={() => navigate("Login")}> 
+         <Bar color={colorOne}>           
+            Login           
+          </Bar> 
+        </TouchableOpacity> 
+
+        <TouchableOpacity>   
+          <Bar color={colorTwo}> Signup </Bar> 
+        </TouchableOpacity>
+        </View>
+        </View> 
+
+
+        
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 0,
+    margin: 0,
+    justifyContent: 'top',
+    paddingTop: Constants.statusBarHeight,
+    backgroundColor: '#ecf0f1',
+
+  },
+  paragraph: {
+    margin: 24,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+    bottom: {
+  flex: 1,
+  justifyContent: 'flex-end',
+  marginBottom: 0,
+}
+});
