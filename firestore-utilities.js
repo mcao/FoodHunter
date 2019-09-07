@@ -330,7 +330,10 @@ let dbutilities = (function() {
       } if(!donationDoc.exists) {
         return {status: 500, message: "That donation id seems to be invalid"};
       }
-      
+      if(donation_doc.data().owner.toLowerCase() != user.toLowerCase()) {
+        return {status:500, message:"You don't have permission to edit that donation."}
+      }
+
       let invalidEvents = donationDoc.data().rejectedEvents || [];
 
       let minDist = 1000000;
@@ -367,8 +370,15 @@ let dbutilities = (function() {
 
     try {
       let [donation_doc, space_doc] = await Promise.all(donationRef.get(), spaceRef.get());
-      if(!donation_doc.exists) {return {status:500, message:"No donation with that ID was found."}};
-      if(!space_doc.exists) {return {status:500, message:"No space with that ID was found."}};
+      if(!donation_doc.exists) {
+        return {status:500, message:"No donation with that ID was found."}
+      };
+      if(!space_doc.exists) {
+        return {status:500, message:"No space with that ID was found."}
+      };
+      if(donation_doc.data().owner.toLowerCase() != user.toLowerCase()) {
+        return {status:500, message:"You don't have permission to edit that donation."}
+      };
       donation_doc.update({"matched": space_id});
       space_doc.update( {
         "matches": admin.firestore.FieldValue.arrayUnion(donation_id)
