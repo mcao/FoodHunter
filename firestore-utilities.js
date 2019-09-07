@@ -39,10 +39,20 @@ let dbutilities = (function() {
 
     try {
       let doc = await tokenRef.get();
-      return doc.data.username == user;
+      if(!doc.exists) return {status: 500, message: "invalid token"}; 
+      if(!doc.data.username == user)  return {status: 500, message: "token associated with another user"}; //wrong token for the user
+      
+      const userRef = fdb.collection('users').doc(user.toLowerCase()); 
+      let userDoc = await userRef.get();
+      
+      if(!userDoc.exists) return {status: 500, message: "no such user"}; //no such user
+      if(!userDoc.data().verified) return {status: 500, message: "you need to verify your account first"}; //user not verified
+
+      return {status: 200, message: "success!"};
     } catch (err) {
-      return false;
+      return {status: 500, message: err.message};
     }
+
   }
 
   async function createNewUser(user, hashed_pw) {
@@ -52,7 +62,7 @@ let dbutilities = (function() {
       let userDoc = await userRef.get();
       console.log(userDoc);
       if (userDoc.exists) {
-        return false;
+        return {status: 500, message: "that username is taken"};
       }
 
       var date = getCurrDate();
@@ -72,12 +82,18 @@ let dbutilities = (function() {
       fdb
         .collection('users')
         .doc(user.toLowerCase())
-        .set({ username: user, token: newToken, verified: false });
+        .set({ 
+          username: user, 
+          token: newToken, 
+          verified: false, 
+          donations: [],
+          spaces: [] 
+        });
 
-      return newToken;
+      return {status: 200, message: "success", token: newToken};
     } catch (err) {
       console.log(err);
-      return false;
+      return {status: 500, message: err.message};
     }
   }
 
@@ -87,12 +103,12 @@ let dbutilities = (function() {
       let userDoc = await userRef.get();
       if (!userDoc.exists) {
         console.log('invalid user');
-        return false;
+        return {status: 500, message: "invalid user"};
       }
       let data = userDoc.data();
       if (data.password !== hashed_pw) {
         console.log('incorrect pw');
-        return false;
+        return {status: 500, message: "password does not match"};
       }
 
       let newToken = token();
@@ -110,9 +126,9 @@ let dbutilities = (function() {
         .doc(user.toLowerCase())
         .update({ last_login: date });
       console.log(newToken);
-      return newToken;
+      return {status: 200, message: "success", token: newToken};
     } catch (err) {
-      return false;
+      return {status: 500, message: err.message};
     }
   }
 
@@ -126,11 +142,11 @@ let dbutilities = (function() {
       let doc = await tokenRef.get();
       if (!doc.exists) {
         console.log('no such token');
-        return false;
+        return {status: 500, message: "invalid token"};
       }
       if (!(doc.data().username === user)) {
         console.log('wrong username');
-        return false;
+        return {status: 500, message: "incorrect username"};
       } //can't logout on someone else's behalf
       var date = getCurrDate();
       fdb
@@ -142,9 +158,9 @@ let dbutilities = (function() {
 
       tokenRef.delete();
 
-      return true;
+      return {status: 200, message: "success!"};
     } catch (err) {
-      return false;
+      return {status: 500, message: err.message};
     }
   }
 
@@ -154,16 +170,17 @@ let dbutilities = (function() {
       let doc = await userRef.get();
       if (!(doc.data().token == token)) {
         console.log('bad token!');
-        return 'ERROR: Bad Token';
+        return {status: 500, message: "Bad token"};
       }
       if (doc.data().verified == true) {
         console.log('already verified!');
-        return 'ERROR: Already Verified!';
+        return {status: 500, message: "Already Verified"};
       }
       userRef.update({ verified: true });
-      return true;
+      return {status: 200, message: "Success!"};
+
     } catch (err) {
-      return 'ERROR: ' + err.message;
+      return {status: 500, message: err.message};
     }
   }
 
@@ -182,13 +199,82 @@ let dbutilities = (function() {
     return await fdb.collection('spaces').get();
   }
 
+  async function pushDonation(user, token, donation) {
+    auth = authUser(user, token);
+    if(auth.status != 200) return auth;
+
+    try {
+      newRef = await fdb.collection('donations').add(donation);
+      fdb
+        .collection('users')
+        .doc(user.toLowerCase())
+        .update({
+           donations: admin.firestore.FieldValue.arrayUnion(newRef.id)
+        });
+      return {status: 200, message: "success!"};
+    } catch (err) {
+      return {status: 500, message: err.message};
+    }
+  }
+
+  async function pushSpace(user, token, space) {
+    auth = authUser(user, token);
+    if(auth.status != 200) return auth;
+    try {
+      newRef = await fdb.collection('spaces').add(donation);
+      fdb
+        .collection('users')
+        .doc(user.toLowerCase())
+        .update({
+           spaces: admin.firestore.FieldValue.arrayUnion(newRef.id)
+        });
+      return true;
+    } catch (err) {
+      return {status: 500, message: err.message};
+    }
+  }
+
+  async function getUsersSpaces(user) {
+    const userRef = fdb.collection('users').doc(user.toLowerCase());
+    try {
+      let userDoc = await userRef.get();
+      if (!userDoc.exists) {
+        console.log('invalid user');
+        return false;
+      }
+
+      return userDoc.data().spaces;
+    } catch(err) {
+      return false;
+    }
+  } 
+
+  async function getUsersDonations(user) {
+    const userRef = fdb.collection('users').doc(user.toLowerCase());
+    try {
+      let userDoc = await userRef.get();
+      if (!userDoc.exists) {
+        console.log('invalid user');
+        return false;
+      }
+
+      return userDoc.data().donations;
+    } catch(err) {
+      return false;
+    }
+  } 
+
   return {
     db: fdb,
+    addDonation: pushDonation,
+    addSpace: pushSpace,
     checkAuth: authUser,
     createUser: createNewUser, //implemented
     getDonations: getAllDonations,
     getSpaces: getAllSpaces,
     getUsers: getAllUsers,
+    getOneUsersSpaces: getUsersSpaces,
+    getOneUsersDonations: getUsersDonations,
     login: doLogin,
     logout: doLogout,
     verify: verifyUser //implemented
