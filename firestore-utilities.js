@@ -19,6 +19,17 @@ let dbutilities = (function() {
     return rand() + rand(); // to make it longer
   };
 
+  function getCurrDate() {
+    var today = new Date();
+    var date =
+      today.getFullYear() +
+      '-' +
+      (today.getMonth() + 1) +
+      '-' +
+      today.getDate();
+    return date;
+  }
+
   async function createNewUser(user, hashed_pw) {
     const userRef = fdb.collection('auth').doc(user.toLowerCase());
 
@@ -28,13 +39,8 @@ let dbutilities = (function() {
       if (userDoc.exists) {
         return false;
       }
-      var today = new Date();
-      var date =
-        today.getFullYear() +
-        '-' +
-        (today.getMonth() + 1) +
-        '-' +
-        today.getDate();
+
+      var date = getCurrDate();
    
       fdb.collection('auth').doc(user.toLowerCase()).set({
         username: user,
@@ -57,15 +63,18 @@ let dbutilities = (function() {
     }
   }
 
+
   async function doLogin(user, hashed_pw) {
-    const userRef = fdb.collection('auth').doc(user.ToLowerCase());
+    const userRef = fdb.collection('auth').doc(user.toLowerCase());
     try {
       let userDoc = await userRef.get();
       if (!userDoc.exists) {
+        console.log("invalid user");
         return false;
       }
       let data = userDoc.data();
       if (data.password !== hashed_pw) {
+        console.log("incorrect pw");
         return false;
       }
 
@@ -77,28 +86,50 @@ let dbutilities = (function() {
         .doc(newToken)
         .set({ username: user });
 
-      var today = new Date();
-      var date =
-        today.getFullYear() +
-        '-' +
-        (today.getMonth() + 1) +
-        '-' +
-        today.getDate();
+        var date = getCurrDate();
       
         fdb
           .collection("auth")
           .doc(user.toLowerCase())
           .update({last_login: date});
+      console.log(newToken);
       return newToken;
     } catch (err) {
       return false;
     }
   }
 
+  async function doLogout(user, token) {
+    const tokenRef = 
+      fdb
+        .collection('sessions')
+        .doc('active')
+        .collection('tokens')
+        .doc(token);
+      try {
+        let doc = await tokenRef.get();
+        if(!doc.exists) {console.log("no such token"); return false;}
+        if(!(doc.data().username === user)) {console.log("wrong username"); return false;} //can't logout on someone else's behalf
+        var date = getCurrDate();
+        fdb
+          .collection('sessions')
+          .doc('expired')
+          .collection('tokens')
+          .doc(token).set({username: user, expiry: date});
+        
+          tokenRef.delete();
+
+          return true;
+      } catch (err) {
+          return false;
+      }
+  }
+
   return {
     db: fdb,
     createUser: createNewUser,
-    login: doLogin
+    login: doLogin,
+    logout: doLogout
   };
 })();
 
