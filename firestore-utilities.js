@@ -30,6 +30,22 @@ let dbutilities = (function() {
     return date;
   }
 
+  async function authUser(user, token) {
+    const tokenRef =  
+    fdb
+     .collection('sessions')
+     .doc('active')
+     .collection('tokens')
+     .doc(token);
+
+     try {
+       let doc = await tokenRef.get();
+       return (doc.data.username == user);
+     } catch (err) {
+       return false;
+     }
+  }
+
   async function createNewUser(user, hashed_pw) {
     const userRef = fdb.collection('auth').doc(user.toLowerCase());
 
@@ -62,7 +78,6 @@ let dbutilities = (function() {
       return false;
     }
   }
-
 
   async function doLogin(user, hashed_pw) {
     const userRef = fdb.collection('auth').doc(user.toLowerCase());
@@ -125,11 +140,45 @@ let dbutilities = (function() {
       }
   }
 
+  async function verifyUser(user, token) {
+    const userRef = fdb.collection('users').doc(user.toLowerCase());
+    try {
+      let doc = await userRef.get();
+      if(!(doc.data().token == token)) { console.log("bad token!"); return false; }
+      if(doc.data().verified == true) { console.log("already verified!");  return false; }
+      userRef.update({verified: true});
+      return true;
+      
+    } catch(err) {
+      return false;
+    }
+  }
+
+  //returns a snapshot of all users
+  async function getAllUsers() {
+    return await fdb.collection('users').get();
+  }
+
+  //returns a snapshot of all donations
+  async function getAllDonations() {
+    return await fdb.collection('donations').get();
+  }
+
+  //returns a snapshot of all spaces
+  async function getAllSpaces() {
+    return await fdb.collection('spaces').get();
+  }
+
   return {
     db: fdb,
+    checkAuth: authUser,
     createUser: createNewUser,
+    getDonations: getAllDonations,
+    getSpaces: getAllSpaces,
+    getUsers: getAllUsers,
     login: doLogin,
-    logout: doLogout
+    logout: doLogout,
+    verify: verifyUser
   };
 })();
 
