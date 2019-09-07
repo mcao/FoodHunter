@@ -1,5 +1,7 @@
 // Imports module for password hashing
 const bcrypt = require('bcrypt');
+
+// Import module for emails
 const nodemailer = require('nodemailer');
 var transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -8,6 +10,10 @@ var transporter = nodemailer.createTransport({
     pass: 'Pennapps1010'
   }
 });
+
+// Import module for texting
+const config = require('./config.json');
+const client = require('twilio')(config.twilio_sid, config.twilio_token);
 
 exports.hashPassword = async function(password) {
   return await bcrypt.hash(password, 10);
@@ -27,6 +33,22 @@ exports.sendVerificationEmail = async function(email, token) {
 
   transporter.sendMail(mailOptions, function(err, info) {
     if (err) console.log(err);
-    else console.log(info);
   });
+};
+
+exports.sendVerificationText = function(email, phone, token) {
+  client.messages
+    .create({
+      body:
+        'http://localhost:8080/verifyphone/' +
+        email +
+        '.' +
+        phone +
+        '.' +
+        token,
+      from: config.twilio_number,
+      to: phone
+    })
+    .then(message => {});
+  return null;
 };
