@@ -21,6 +21,7 @@ let dbutilities = (function() {
 
   async function createNewUser(user, hashed_pw) {
     const userRef = fdb.collection('auth').doc(user.toLowerCase());
+
     try {
       let userDoc = await userRef.get();
       console.log(userDoc);
@@ -34,20 +35,24 @@ let dbutilities = (function() {
         (today.getMonth() + 1) +
         '-' +
         today.getDate();
-      newRef = await fdb.collection('auth').add({
+   
+      fdb.collection('auth').doc(user.toLowerCase()).set({
         username: user,
         password: hashed_pw,
         date_created: date,
         last_login: date
       });
+
       var newToken = token();
+
       fdb
         .collection('users')
-        .doc(newRef.id)
+        .doc(user.toLowerCase())
         .set({ username: user, token: newToken, verified: false });
-
+     
       return newToken;
     } catch (err) {
+      console.log(err);
       return false;
     }
   }
@@ -63,6 +68,7 @@ let dbutilities = (function() {
       if (data.password !== hashed_pw) {
         return false;
       }
+
       let newToken = token();
       fdb
         .collection('sessions')
@@ -70,7 +76,19 @@ let dbutilities = (function() {
         .collection('tokens')
         .doc(newToken)
         .set({ username: user });
-      //TODO update last_login for the user at this point
+
+      var today = new Date();
+      var date =
+        today.getFullYear() +
+        '-' +
+        (today.getMonth() + 1) +
+        '-' +
+        today.getDate();
+      
+        fdb
+          .collection("auth")
+          .doc(user.toLowerCase())
+          .update({last_login: date});
       return newToken;
     } catch (err) {
       return false;
