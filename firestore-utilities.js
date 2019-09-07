@@ -81,7 +81,7 @@ let dbutilities = (function() {
     }
   }
 
-  async function doLogin(user, hashed_pw) {
+  async function doLogin(user, password) {
     const userRef = fdb.collection('auth').doc(user.toLowerCase());
     try {
       let userDoc = await userRef.get();
@@ -89,8 +89,14 @@ let dbutilities = (function() {
         console.log('invalid user');
         return false;
       }
+
       let data = userDoc.data();
-      if (data.password !== hashed_pw) {
+
+      let correctpw = await require('./utils').verifyPassword(
+        password,
+        data.password
+      );
+      if (!correctpw) {
         console.log('incorrect pw');
         return false;
       }

@@ -34,7 +34,7 @@ app.get('/', function(req, res) {
  * @description Allows users to verify their email and allow themselves full functionality.
  * @version 1.0.0
  */
-app.post('/verify/:user.:token', async function(req, res) {
+app.get('/verify/:user.:token', async function(req, res) {
   let user = req.params.user;
   let token = req.params.token;
   let verified = await firestoreDB.verify(user, token);
@@ -101,10 +101,9 @@ app.post('/api/v1/login', async function(req, res) {
   if (!req.query.username || !req.query.password)
     return res.send('Must provide username and password!');
 
-  let hashedPassword = await utils.hashPassword(req.query.password);
   let sessionToken = await firestoreDB.login(
     req.query.username,
-    hashedPassword
+    req.query.password
   );
 
   if (!sessionToken) {
@@ -123,11 +122,11 @@ app.post('/api/v1/login', async function(req, res) {
  * @description Allows user to securely log out of the application and end their session.
  * @version 1.0.0
  */
-app.get('/api/v1/logout', async function(req, res) {
+app.post('/api/v1/logout', async function(req, res) {
   if (!req.query.username || !req.query.token)
     return res.send('Must provide username and session token!');
 
-  let loggedout = await firestoreDB.logout(req.query.username.req.query.token);
+  let loggedout = await firestoreDB.logout(req.query.username, req.query.token);
 
   if (!loggedout) {
     return res.sendStatus(500);
@@ -135,7 +134,7 @@ app.get('/api/v1/logout', async function(req, res) {
     return res.send({
       status: 200,
       response: 'Successfully logged out! See you next time.',
-      session_token: sessionToken
+      session_token: req.query.token
     });
   }
 });
