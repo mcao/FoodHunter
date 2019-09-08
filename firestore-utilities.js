@@ -391,12 +391,28 @@ let dbutilities = (function() {
           message: "You don't have permission to edit that donation."
         };
       }
-      donation_doc.update({ matched: space_id });
+      // donation_doc.update({"matched": space_id});
+      fdb
+        .collection('claimed_donations')
+        .doc(donation_id)
+        .set(donationRef.data());
+      donationRef.delete();
       space_doc.update({
         matches: admin.firestore.FieldValue.arrayUnion(donation_id)
       });
 
       return { status: 200, message: 'success!' };
+    } catch (err) {
+      return { status: 500, message: err.message };
+    }
+  }
+
+  async function getUserDataProfile(user) {
+    userRef = fdb.collection('users').doc(user);
+    try {
+      let userDoc = await userRef.get();
+      if (!userDoc.exists) return { status: 500, message: 'no such user' };
+      return { status: 200, message: 'success', payload: userDoc.data() };
     } catch (err) {
       return { status: 500, message: err.message };
     }
@@ -408,14 +424,15 @@ let dbutilities = (function() {
     addSpace: pushSpace,
     assignDonation: assignDonationToSpace, // implemented
     checkAuth: authUser,
-    createUser: createNewUser, // implemented
-    getDonations: getAllDonations, // implemented
-    getSpaces: getAllSpaces, // implemented
-    getUsers: getAllUsers, // implemented
-    getOneUsersSpaces: getUsersSpaces, // implemented
-    getOneUsersDonations: getUsersDonations, // implemented
-    login: doLogin, // implemented
-    logout: doLogout, // implemented
+    createUser: createNewUser,
+    getDonations: getAllDonations,
+    getProfile: getUserDataProfile,
+    getSpaces: getAllSpaces,
+    getUsers: getAllUsers,
+    getOneUsersSpaces: getUsersSpaces,
+    getOneUsersDonations: getUsersDonations,
+    login: doLogin,
+    logout: doLogout,
     matchDonation: matchDonationToSpace,
     verify: verifyUser, // implemented
     verifyPhone: verifyPhone // implemented
