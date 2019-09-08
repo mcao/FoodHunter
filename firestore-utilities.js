@@ -341,6 +341,7 @@ let dbutilities = (function() {
 
       let minDist = 1000000;
       let currSpaceId = 0;
+
       snapshot.forEach(doc => {
         if (!invalidEvents.includes(doc.id)) {
           //i.e. don't ask for rejected events
