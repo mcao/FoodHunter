@@ -100,7 +100,7 @@ app.post('/api/v1/login', async function(req, res) {
 
   let results = await firestoreDB.login(req.body.username, req.body.password);
 
-  return results;
+  res.send(results);
 });
 
 /**
@@ -114,7 +114,7 @@ app.post('/api/v1/logout', async function(req, res) {
 
   let loggedout = await firestoreDB.logout(req.body.username, req.body.token);
 
-  return loggedout;
+  res.send(loggedout);
 });
 
 app.get('/api/v1/food/all', function(req, res) {
