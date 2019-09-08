@@ -88,7 +88,7 @@ let dbutilities = (function() {
         .doc(user.toLowerCase())
         .set({
           username: user,
-          phone: phonenumber,
+          phone: phonenumber ? phonenumber : '',
           token: newToken,
           phoneToken: phoneToken ? phoneToken : '',
           verified: false,

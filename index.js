@@ -72,26 +72,26 @@ app.get('/api/v1/status', function(req, res) {
  * @version 1.0.0
  */
 app.post('/api/v1/register', async function(req, res) {
-  if (!req.query.username || !req.query.password)
+  if (!req.body.username || !req.body.password)
     return res.send('Must provide username and password!');
 
   console.log(
-    `Creating account with username ${req.query.username}, password ${req.query.password}, and phone ${req.query.phoneNumber}...`
+    `Creating account with username ${req.body.username}, password ${req.body.password}, and phone ${req.query.phoneNumber}...`
   );
 
-  let hashedPassword = await utils.hashPassword(req.query.password);
+  let hashedPassword = await utils.hashPassword(req.body.password);
   let result = await firestoreDB.createUser(
-    req.query.username,
+    req.body.username,
     hashedPassword,
-    req.query.phoneNumber ? req.query.phoneNumber : ''
+    req.body.phoneNumber ? req.body.phoneNumber : ''
   );
 
-  await utils.sendVerificationEmail(req.query.username, result.token);
+  await utils.sendVerificationEmail(req.body.username, result.token);
 
-  if (req.query.phoneNumber) {
+  if (req.body.phoneNumber) {
     await utils.sendVerificationText(
-      req.query.username,
-      req.query.phoneNumber,
+      req.body.username,
+      req.body.phoneNumber,
       result.phoneToken
     );
   }
@@ -105,10 +105,10 @@ app.post('/api/v1/register', async function(req, res) {
  * @version 1.0.0
  */
 app.post('/api/v1/login', async function(req, res) {
-  if (!req.query.username || !req.query.password)
+  if (!req.body.username || !req.body.password)
     return res.send('Must provide username and password!');
 
-  let results = await firestoreDB.login(req.query.username, req.query.password);
+  let results = await firestoreDB.login(req.body.username, req.body.password);
 
   return results;
 });
@@ -119,10 +119,10 @@ app.post('/api/v1/login', async function(req, res) {
  * @version 1.0.0
  */
 app.post('/api/v1/logout', async function(req, res) {
-  if (!req.query.username || !req.query.token)
+  if (!req.body.username || !req.body.token)
     return res.send('Must provide username and session token!');
 
-  let loggedout = await firestoreDB.logout(req.query.username, req.query.token);
+  let loggedout = await firestoreDB.logout(req.body.username, req.body.token);
 
   return loggedout;
 });
@@ -137,21 +137,21 @@ app.get('/api/v1/food/all', function(req, res) {
 
 app.get('/api/v1/food/assign', function(req, res) {
   if (
-    !req.query.username ||
-    !req.query.token ||
-    !req.query.donation_id ||
-    !req.query.space_id
+    !req.body.username ||
+    !req.body.token ||
+    !req.body.donation_id ||
+    !req.body.space_id
   )
     res.send({
       status: 500,
       response: 'You are missing one or more arguments.'
     });
   res.send(
-    firestoreDB.matchDonation(
-      req.query.username,
-      req.query.token,
-      req.query.donation_id,
-      req.query.space_id
+    firestoreDB.assignDonation(
+      req.body.username,
+      req.body.token,
+      req.body.donation_id,
+      req.body.space_id
     )
   );
 });
