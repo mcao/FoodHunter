@@ -184,10 +184,10 @@ app.get('/api/v1/users/all', function(req, res) {
 app.get('/api/v1/users/active', function(req, res) {});
 
 app.get(
-  '/.well-known/acme-challenge/CK1Uq7Hxvh5haZ8ogoyBr4A2zBWoTHo2JTF81DZKpfk',
+  '/.well-known/acme-challenge/sx6C3S26BXkTNBBzqoONlvgKPjpn8AgGZ5WZUU7f7V4',
   function(req, res) {
     res.send(
-      'CK1Uq7Hxvh5haZ8ogoyBr4A2zBWoTHo2JTF81DZKpfk.7Trlt0QtKsTKEIxHFe2ICSfIj2kqXdKCUGXWQdWF_es'
+      'sx6C3S26BXkTNBBzqoONlvgKPjpn8AgGZ5WZUU7f7V4.7Trlt0QtKsTKEIxHFe2ICSfIj2kqXdKCUGXWQdWF_es'
     );
   }
 );
