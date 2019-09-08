@@ -183,6 +183,15 @@ app.get('/api/v1/users/all', function(req, res) {
 // TODO
 app.get('/api/v1/users/active', function(req, res) {});
 
+app.get(
+  '/.well-known/acme-challenge/Y0xw5CLJv7Z7C0nsuOnE6KA85afl0aQvVR0LU4EEB0E',
+  function(req, res) {
+    res.send(
+      'Y0xw5CLJv7Z7C0nsuOnE6KA85afl0aQvVR0LU4EEB0E.7Trlt0QtKsTKEIxHFe2ICSfIj2kqXdKCUGXWQdWF_es'
+    );
+  }
+);
+
 // Create HTTP and HTTPS servers
 http.createServer(app).listen(config.http_port);
 https
