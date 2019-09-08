@@ -159,9 +159,9 @@ app.get('/api/v1/food/new', function(req, res) {
   );
 });
 
-app.get('/api/v1/space/all', function(req, res) {
+app.get('/api/v1/space/all', async function(req, res) {
   let returnVal = [];
-  firestoreDB.getSpaces().forEach(doc => {
+  (await firestoreDB.getSpaces()).forEach(doc => {
     returnVal.push(doc.data());
   });
   res.send(returnVal);
