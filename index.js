@@ -131,7 +131,7 @@ app.get('/api/v1/food/all', function(req, res) {
   let returnVal = [];
   firestoreDB.getDonations().forEach(doc => {
     returnVal.push(doc.data());
-  })
+  });
   res.send(returnVal);
 });
 
@@ -166,7 +166,7 @@ app.get('/api/v1/space/all', function(req, res) {
   let returnVal = [];
   firestoreDB.getSpaces().forEach(doc => {
     returnVal.push(doc.data());
-  })
+  });
   res.send(returnVal);
 });
 
@@ -188,30 +188,12 @@ app.get('/api/v1/users/all', function(req, res) {
   let returnVal = [];
   firestoreDB.getUsers().forEach(doc => {
     returnVal.push(doc.data());
-  })
+  });
   res.send(returnVal);
 });
 
 // TODO
 app.get('/api/v1/users/active', function(req, res) {});
-
-app.get(
-  '/.well-known/acme-challenge/e2-I6icybO4IbjcPXtPFf85ZyXkBEU1j1lgW8gfp0mM',
-  function(req, res) {
-    res.send(
-      'e2-I6icybO4IbjcPXtPFf85ZyXkBEU1j1lgW8gfp0mM.XAbchxjzE2VT5Xhpten0au5sIxJvI9Wx6Vn8sYb-Mi4'
-    );
-  }
-);
-
-app.get(
-  '/.well-known/acme-challenge/YR_W8xIVsJTdlnutL5HVzjM7dha8P6uU82VDG8iRTNo',
-  function(req, res) {
-    res.send(
-      'YR_W8xIVsJTdlnutL5HVzjM7dha8P6uU82VDG8iRTNo.XAbchxjzE2VT5Xhpten0au5sIxJvI9Wx6Vn8sYb-Mi4'
-    );
-  }
-);
 
 // Create HTTP and HTTPS servers
 http.createServer(app).listen(config.http_port);
