@@ -117,9 +117,9 @@ app.post('/api/v1/logout', async function(req, res) {
   res.send(loggedout);
 });
 
-app.get('/api/v1/food/all', function(req, res) {
+app.get('/api/v1/food/all', async function(req, res) {
   let returnVal = [];
-  firestoreDB.getDonations().forEach(doc => {
+  (await firestoreDB.getDonations()).forEach(doc => {
     returnVal.push(doc.data());
   });
   res.send(returnVal);
@@ -195,9 +195,9 @@ app.get('/api/v1/user/:user/spaces', function(req, res) {
   req.send(firestoreDB.getOneUsersSpaces(req.params.user));
 });
 
-app.get('/api/v1/users/all', function(req, res) {
+app.get('/api/v1/users/all', async function(req, res) {
   let returnVal = [];
-  firestoreDB.getUsers().forEach(doc => {
+  (await firestoreDB.getUsers()).forEach(doc => {
     returnVal.push(doc.data());
   });
   res.send(returnVal);

@@ -27,7 +27,7 @@ exports.sendVerificationEmail = async function(email, token) {
   let mailOptions = {
     from: 'pennappsxx@gmail.com',
     to: email,
-    subject: 'PennApps XX Verification',
+    subject: 'Foodhunter.space Verification',
     html: `To verify your email, please go to http://foodhunter.space/verify/${email}.${token}`
   };
 
