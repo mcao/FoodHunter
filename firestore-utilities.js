@@ -447,7 +447,7 @@ let dbutilities = (function() {
         let spaceRef = fdb.collection("spaces").doc(id);
         let spaceDoc = await spaceRef.get();
         if(spaceDoc.exists) 
-        eventsArr.push(spaceDoc.data());
+          eventsArr.push(spaceDoc.data());
       }
 
       return { status: 200, message: 'success', 
