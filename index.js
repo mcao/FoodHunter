@@ -89,7 +89,7 @@ app.post('/api/v1/register', async function(req, res) {
   await utils.sendVerificationEmail(req.query.username, result.token);
 
   if (req.query.phoneNumber) {
-    utils.sendVerificationText(
+    await utils.sendVerificationText(
       req.query.username,
       req.query.phoneNumber,
       result.phoneToken
@@ -135,9 +135,6 @@ app.get('/api/v1/food/all', function(req, res) {
   res.send(returnVal);
 });
 
-// TODO
-app.get('/api/v1/food/available', function(req, res) {});
-
 app.get('/api/v1/food/assign', function(req, res) {
   if (
     !req.query.username ||
@@ -150,7 +147,7 @@ app.get('/api/v1/food/assign', function(req, res) {
       response: 'You are missing one or more arguments.'
     });
   res.send(
-    firestoreDB.assignDonationToSpace(
+    firestoreDB.matchDonation(
       req.query.username,
       req.query.token,
       req.query.donation_id,
@@ -181,7 +178,7 @@ app.get('/api/v1/user/:user/donations', function(req, res) {
 });
 
 app.get('/api/v1/user/:user/spaces', function(req, res) {
-  req.send(firestoreDB.getOneUsersDonations(req.params.user));
+  req.send(firestoreDB.getOneUsersSpaces(req.params.user));
 });
 
 app.get('/api/v1/users/all', function(req, res) {

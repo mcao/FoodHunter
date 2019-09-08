@@ -421,13 +421,13 @@ let dbutilities = (function() {
 
   return {
     db: fdb,
-    addDonation: pushDonation,
-    addSpace: pushSpace,
-    assignDonation: assignDonationToSpace, // implemented
+    addDonation: pushDonation, // TODO
+    addSpace: pushSpace, // TODO
+    assignDonation: assignDonationToSpace,
     checkAuth: authUser,
     createUser: createNewUser,
     getDonations: getAllDonations,
-    getProfile: getUserDataProfile,
+    getProfile: getUserDataProfile, // TODO
     getSpaces: getAllSpaces,
     getUsers: getAllUsers,
     getOneUsersSpaces: getUsersSpaces,
@@ -435,8 +435,8 @@ let dbutilities = (function() {
     login: doLogin,
     logout: doLogout,
     matchDonation: matchDonationToSpace,
-    verify: verifyUser, // implemented
-    verifyPhone: verifyPhone // implemented
+    verify: verifyUser,
+    verifyPhone: verifyPhone
   };
 })();
 

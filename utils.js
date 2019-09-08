@@ -28,7 +28,7 @@ exports.sendVerificationEmail = async function(email, token) {
     from: 'pennappsxx@gmail.com',
     to: email,
     subject: 'PennApps XX Verification',
-    html: `To verify your email, please go to http://localhost:8080/verify/${email}.${token}`
+    html: `To verify your email, please go to http://foodhunter.space/verify/${email}.${token}`
   };
 
   transporter.sendMail(mailOptions, function(err, info) {
@@ -40,7 +40,7 @@ exports.sendVerificationText = function(email, phone, token) {
   client.messages
     .create({
       body:
-        'http://localhost:8080/verifyphone/' +
+        'http://foodhunter.space/verifyphone/' +
         email +
         '.' +
         phone +
