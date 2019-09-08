@@ -338,9 +338,9 @@ let dbutilities = (function() {
 
       let minDist = 1000000;
       let currSpaceId = 0;
-      snapshot.forEach(doc => {
+      snapshot.forEach(spaceDoc => {
         if(!invalidEvents.includes(doc.id)) {//i.e. don't ask for rejected events 
-          let distance = Math.sqrt(Math.pow(donationDoc.latitude-spaceCollection.latitude, 2)+Math.pow(donationDoc.longitude-spaceCollection.longitude, 2));
+          let distance = Math.sqrt(Math.pow(donationDoc.data().latitude-spaceDoc.data().latitude, 2)+Math.pow(donationDoc.data().longitude-spaceDoc.data().longitude, 2));
           if(distance < minDist) {
             currSpaceId = doc.id;
             minDist = dist;

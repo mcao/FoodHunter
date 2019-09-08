@@ -128,19 +128,31 @@ app.post('/api/v1/logout', async function(req, res) {
 });
 
 app.get('/api/v1/food/all', function(req, res) {
-  res.send(firestoreDB.getDonations());
+  let returnVal = [];
+  firestoreDB.getDonations().forEach(doc => {
+    returnVal.push(doc.data());
+  })
+  res.send(returnVal);
 });
 
 app.get('/api/v1/food/available', function(req, res) {});
 
 app.get('/api/v1/space/all', function(req, res) {
-  res.send(firestoreDB.getSpaces());
+  let returnVal = [];
+  firestoreDB.getSpaces().forEach(doc => {
+    returnVal.push(doc.data());
+  })
+  res.send(returnVal);
 });
 
 app.get('/api/v1/space/available', function(req, res) {});
 
 app.get('/api/v1/users/all', function(req, res) {
-  res.send(firestoreDB.getUsers());
+  let returnVal = [];
+  firestoreDB.getUsers().forEach(doc => {
+    returnVal.push(doc.data());
+  })
+  res.send(returnVal);
 });
 
 app.get('/api/v1/users/active', function(req, res) {});
