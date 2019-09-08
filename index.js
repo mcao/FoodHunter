@@ -89,7 +89,7 @@ app.post('/api/v1/register', async function(req, res) {
   await utils.sendVerificationEmail(req.query.username, result.token);
 
   if (req.query.phoneNumber) {
-    utils.sendVerificationText(
+    await utils.sendVerificationText(
       req.query.username,
       req.query.phoneNumber,
       result.phoneToken
@@ -131,12 +131,9 @@ app.get('/api/v1/food/all', function(req, res) {
   let returnVal = [];
   firestoreDB.getDonations().forEach(doc => {
     returnVal.push(doc.data());
-  })
+  });
   res.send(returnVal);
 });
-
-// TODO
-app.get('/api/v1/food/available', function(req, res) {});
 
 app.get('/api/v1/food/assign', function(req, res) {
   if (
@@ -150,7 +147,7 @@ app.get('/api/v1/food/assign', function(req, res) {
       response: 'You are missing one or more arguments.'
     });
   res.send(
-    firestoreDB.assignDonationToSpace(
+    firestoreDB.matchDonation(
       req.query.username,
       req.query.token,
       req.query.donation_id,
@@ -166,7 +163,7 @@ app.get('/api/v1/space/all', function(req, res) {
   let returnVal = [];
   firestoreDB.getSpaces().forEach(doc => {
     returnVal.push(doc.data());
-  })
+  });
   res.send(returnVal);
 });
 
@@ -181,28 +178,19 @@ app.get('/api/v1/user/:user/donations', function(req, res) {
 });
 
 app.get('/api/v1/user/:user/spaces', function(req, res) {
-  req.send(firestoreDB.getOneUsersDonations(req.params.user));
+  req.send(firestoreDB.getOneUsersSpaces(req.params.user));
 });
 
 app.get('/api/v1/users/all', function(req, res) {
   let returnVal = [];
   firestoreDB.getUsers().forEach(doc => {
     returnVal.push(doc.data());
-  })
+  });
   res.send(returnVal);
 });
 
 // TODO
 app.get('/api/v1/users/active', function(req, res) {});
-
-app.get(
-  '/.well-known/acme-challenge/sx6C3S26BXkTNBBzqoONlvgKPjpn8AgGZ5WZUU7f7V4',
-  function(req, res) {
-    res.send(
-      'sx6C3S26BXkTNBBzqoONlvgKPjpn8AgGZ5WZUU7f7V4.7Trlt0QtKsTKEIxHFe2ICSfIj2kqXdKCUGXWQdWF_es'
-    );
-  }
-);
 
 // Create HTTP and HTTPS servers
 http.createServer(app).listen(config.http_port);
