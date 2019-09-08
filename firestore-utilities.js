@@ -463,13 +463,13 @@ let dbutilities = (function() {
 
   return {
     db: fdb,
-    addDonation: pushDonation, // TODO
-    addSpace: pushSpace, // TODO
+    addDonation: pushDonation,
+    addSpace: pushSpace,
     assignDonation: assignDonationToSpace,
     checkAuth: authUser,
     createUser: createNewUser,
     getDonations: getAllDonations,
-    getProfile: getUserDataProfile, // TODO
+    getProfile: getUserDataProfile,
     getSpaces: getAllSpaces,
     getUsers: getAllUsers,
     getOneUsersSpaces: getUsersSpaces,

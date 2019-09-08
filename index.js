@@ -146,8 +146,18 @@ app.get('/api/v1/food/assign', function(req, res) {
   );
 });
 
-// TODO
-app.get('/api/v1/food/new', function(req, res) {});
+app.get('/api/v1/food/new', function(req, res) {
+  if (!req.body.username || !req.body.token || !req.body.item)
+    res.send({
+      status: 500,
+      response: 'You are missing one or more arguments.'
+    });
+  let donation = firestoreDB.addDonation(
+    req.body.username,
+    req.user.token,
+    req.user.item
+  );
+});
 
 app.get('/api/v1/space/all', function(req, res) {
   let returnVal = [];
@@ -160,8 +170,22 @@ app.get('/api/v1/space/all', function(req, res) {
 // TODO
 app.get('/api/v1/space/available', function(req, res) {});
 
-// TODO
-app.get('/api/v1/space/new', function(req, res) {});
+app.get('/api/v1/space/new', function(req, res) {
+  if (!req.body.username || !req.body.token || !req.body.space)
+    res.send({
+      status: 500,
+      response: 'You are missing one or more arguments.'
+    });
+  let donation = firestoreDB.addSpace(
+    req.body.username,
+    req.user.token,
+    req.user.space
+  );
+});
+
+app.get('/api/v1/user/:user', function(req, res) {
+  req.send(firestoreDB.getUserDataProfile(req.params.user));
+});
 
 app.get('/api/v1/user/:user/donations', function(req, res) {
   req.send(firestoreDB.getOneUsersDonations(req.params.user));
@@ -178,9 +202,6 @@ app.get('/api/v1/users/all', function(req, res) {
   });
   res.send(returnVal);
 });
-
-// TODO
-app.get('/api/v1/users/active', function(req, res) {});
 
 // Create HTTP and HTTPS servers
 http.createServer(app).listen(config.http_port);
