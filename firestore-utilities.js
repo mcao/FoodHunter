@@ -100,7 +100,7 @@ let dbutilities = (function() {
       return {
         status: 200,
         message:
-          'Thank you for registering for Food Sharing Service. Please check your email (and phone if you put one in) to verify your account.',
+          'Thank you for registering for Food Hunter. Please check your email (and phone if you put one in) to verify your account.',
         token: newToken,
         phoneToken: phoneToken
       };
@@ -147,8 +147,7 @@ let dbutilities = (function() {
       console.log(newToken);
       return {
         status: 200,
-        message:
-          'Successfully logged in! Welcome back to Food Service Sharing.',
+        message: 'Successfully logged in! Welcome back to Food Hunter.',
         token: newToken
       };
     } catch (err) {
@@ -317,31 +316,40 @@ let dbutilities = (function() {
 
   async function matchDonationToSpace(user, token, donation_id) {
     auth = authUser(user, token);
-    if(auth.status != 200) return auth;
-    
-    const spaceCollection = fdb.collection("spaces");
-    const donation = fdb.collection("donations").doc(donation_id);
+    if (auth.status != 200) return auth;
+
+    const spaceCollection = fdb.collection('spaces');
+    const donation = fdb.collection('donations').doc(donation_id);
 
     try {
       let snapshot = await spaceCollection.get();
       let donationDoc = await donation.get();
-      if(snapshot.empty) {
-        return {status: 200, message: "No active events found at this time."};
-      } if(!donationDoc.exists) {
-        return {status: 500, message: "That donation id seems to be invalid"};
+      if (snapshot.empty) {
+        return { status: 200, message: 'No active events found at this time.' };
       }
-      if(donation_doc.data().owner.toLowerCase() != user.toLowerCase()) {
-        return {status:500, message:"You don't have permission to edit that donation."}
+      if (!donationDoc.exists) {
+        return { status: 500, message: 'That donation id seems to be invalid' };
+      }
+      if (donation_doc.data().owner.toLowerCase() != user.toLowerCase()) {
+        return {
+          status: 500,
+          message: "You don't have permission to edit that donation."
+        };
       }
 
       let invalidEvents = donationDoc.data().rejectedEvents || [];
 
       let minDist = 1000000;
       let currSpaceId = 0;
-      snapshot.forEach(spaceDoc => {
-        if(!invalidEvents.includes(doc.id)) {//i.e. don't ask for rejected events 
-          let distance = Math.sqrt(Math.pow(donationDoc.data().latitude-spaceDoc.data().latitude, 2)+Math.pow(donationDoc.data().longitude-spaceDoc.data().longitude, 2));
-          if(distance < minDist) {
+
+      snapshot.forEach(doc => {
+        if (!invalidEvents.includes(doc.id)) {
+          //i.e. don't ask for rejected events
+          let distance = Math.sqrt(
+            Math.pow(donationDoc.latitude - spaceCollection.latitude, 2) +
+              Math.pow(donationDoc.longitude - spaceCollection.longitude, 2)
+          );
+          if (distance < minDist) {
             currSpaceId = doc.id;
             minDist = dist;
           }
@@ -349,64 +357,73 @@ let dbutilities = (function() {
       });
 
       fdb
-      .collection('users')
-      .doc(user.toLowerCase())
-      .update({
-         invalid_users: admin.firestore.FieldValue.arrayUnion(currSpaceId)
-      });
-      return{status: 200, message: "success!", donation:currSpaceId};
-    } catch(err) {
-      return{status: 500, message: err.message};
+        .collection('users')
+        .doc(user.toLowerCase())
+        .update({
+          invalid_users: admin.firestore.FieldValue.arrayUnion(currSpaceId)
+        });
+      return { status: 200, message: 'success!', donation: currSpaceId };
+    } catch (err) {
+      return { status: 500, message: err.message };
     }
   }
 
   async function assignDonationToSpace(user, token, donation_id, space_id) {
     auth = authUser(user, token);
-    if(auth.status != 200) return auth;
+    if (auth.status != 200) return auth;
 
-    donationRef = fdb.collection("donations").doc(donation_id);
-    spaceRef = fdb.collection("spaces").doc(space_id);
+    donationRef = fdb.collection('donations').doc(donation_id);
+    spaceRef = fdb.collection('spaces').doc(space_id);
 
     try {
-      let [donation_doc, space_doc] = await Promise.all(donationRef.get(), spaceRef.get());
-      if(!donation_doc.exists) {
-        return {status:500, message:"No donation with that ID was found."}
-      };
-      if(!space_doc.exists) {
-        return {status:500, message:"No space with that ID was found."}
-      };
-      if(donation_doc.data().owner.toLowerCase() != user.toLowerCase()) {
-        return {status:500, message:"You don't have permission to edit that donation."}
-      };
-     // donation_doc.update({"matched": space_id});
-      fdb.collection("claimed_donations").doc(donation_id).set(donationRef.data());
+      let [donation_doc, space_doc] = await Promise.all(
+        donationRef.get(),
+        spaceRef.get()
+      );
+      if (!donation_doc.exists) {
+        return { status: 500, message: 'No donation with that ID was found.' };
+      }
+      if (!space_doc.exists) {
+        return { status: 500, message: 'No space with that ID was found.' };
+      }
+      if (donation_doc.data().owner.toLowerCase() != user.toLowerCase()) {
+        return {
+          status: 500,
+          message: "You don't have permission to edit that donation."
+        };
+      }
+      // donation_doc.update({"matched": space_id});
+      fdb
+        .collection('claimed_donations')
+        .doc(donation_id)
+        .set(donationRef.data());
       donationRef.delete();
-      space_doc.update( {
-        "matches": admin.firestore.FieldValue.arrayUnion(donation_id)
+      space_doc.update({
+        matches: admin.firestore.FieldValue.arrayUnion(donation_id)
       });
 
-      return {status: 200, message: "success!"};
-    } catch(err) {
-      return {status: 500, message: err.message};
+      return { status: 200, message: 'success!' };
+    } catch (err) {
+      return { status: 500, message: err.message };
     }
   }
 
   async function getUserDataProfile(user) {
-     userRef = fdb.collection("users").doc(user);
-     try {
-       let userDoc = await userRef.get();
-       if(!userDoc.exists) return {status: 500, message: "no such user"};
-       return {status: 200, message: "success", payload: userDoc.data()};
-     } catch (err) {
-      return {status: 500, message: err.message};
-     }
+    userRef = fdb.collection('users').doc(user);
+    try {
+      let userDoc = await userRef.get();
+      if (!userDoc.exists) return { status: 500, message: 'no such user' };
+      return { status: 200, message: 'success', payload: userDoc.data() };
+    } catch (err) {
+      return { status: 500, message: err.message };
+    }
   }
 
   return {
     db: fdb,
     addDonation: pushDonation,
     addSpace: pushSpace,
-    assignDonation: assignDonationToSpace,
+    assignDonation: assignDonationToSpace, // implemented
     checkAuth: authUser,
     createUser: createNewUser,
     getDonations: getAllDonations,
@@ -418,8 +435,8 @@ let dbutilities = (function() {
     login: doLogin,
     logout: doLogout,
     matchDonation: matchDonationToSpace,
-    verify: verifyUser,
-    verifyPhone: verifyPhone
+    verify: verifyUser, // implemented
+    verifyPhone: verifyPhone // implemented
   };
 })();
 
