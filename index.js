@@ -26,7 +26,7 @@ const firestoreDB = firestore_utils.dbutilities;
  * @version 1.0.0
  */
 app.get('/', function(req, res) {
-  res.send('Welcome to the PennApps XX API!');
+  res.send('Welcome to the Food Hunter API!');
 });
 
 /**
@@ -36,7 +36,7 @@ app.get('/', function(req, res) {
  */
 app.get('/verify/:user.:token', async function(req, res) {
   let verified = await firestoreDB.verify(req.params.user, req.params.token);
-  return verified;
+  res.send(verified);
 });
 
 /**
@@ -62,7 +62,7 @@ app.get('/api/v1/status', function(req, res) {
   res.send({
     status: 200,
     response:
-      'Welcome to the PennApps XX API! All modules are currently functional.'
+      'Welcome to the Food Hunter API! All modules are currently functional.'
   });
 });
 
@@ -131,18 +131,56 @@ app.get('/api/v1/food/all', function(req, res) {
   res.send(firestoreDB.getDonations());
 });
 
+// TODO
 app.get('/api/v1/food/available', function(req, res) {});
+
+app.get('/api/v1/food/assign', function(req, res) {
+  if (
+    !req.query.username ||
+    !req.query.token ||
+    !req.query.donation_id ||
+    !req.query.space_id
+  )
+    res.send({
+      status: 500,
+      response: 'You are missing one or more arguments.'
+    });
+  res.send(
+    firestoreDB.assignDonationToSpace(
+      req.query.username,
+      req.query.token,
+      req.query.donation_id,
+      req.query.space_id
+    )
+  );
+});
+
+// TODO
+app.get('/api/v1/food/new', function(req, res) {});
 
 app.get('/api/v1/space/all', function(req, res) {
   res.send(firestoreDB.getSpaces());
 });
 
+// TODO
 app.get('/api/v1/space/available', function(req, res) {});
+
+// TODO
+app.get('/api/v1/space/new', function(req, res) {});
+
+app.get('/api/v1/user/:user/donations', function(req, res) {
+  req.send(firestoreDB.getOneUsersDonations(req.params.user));
+});
+
+app.get('/api/v1/user/:user/spaces', function(req, res) {
+  req.send(firestoreDB.getOneUsersDonations(req.params.user));
+});
 
 app.get('/api/v1/users/all', function(req, res) {
   res.send(firestoreDB.getUsers());
 });
 
+// TODO
 app.get('/api/v1/users/active', function(req, res) {});
 
 // Create HTTP and HTTPS servers
