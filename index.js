@@ -184,10 +184,19 @@ app.get('/api/v1/users/all', function(req, res) {
 app.get('/api/v1/users/active', function(req, res) {});
 
 app.get(
-  '/.well-known/acme-challenge/sx6C3S26BXkTNBBzqoONlvgKPjpn8AgGZ5WZUU7f7V4',
+  '/.well-known/acme-challenge/SVwAJrxVR056Q5O5MF-9FPBa8TxrMJ2viCdJXy-Vy9k',
   function(req, res) {
     res.send(
-      'sx6C3S26BXkTNBBzqoONlvgKPjpn8AgGZ5WZUU7f7V4.7Trlt0QtKsTKEIxHFe2ICSfIj2kqXdKCUGXWQdWF_es'
+      'SVwAJrxVR056Q5O5MF-9FPBa8TxrMJ2viCdJXy-Vy9k.XAbchxjzE2VT5Xhpten0au5sIxJvI9Wx6Vn8sYb-Mi4'
+    );
+  }
+);
+
+app.get(
+  '/.well-known/acme-challenge/YR_W8xIVsJTdlnutL5HVzjM7dha8P6uU82VDG8iRTNo',
+  function(req, res) {
+    res.send(
+      'YR_W8xIVsJTdlnutL5HVzjM7dha8P6uU82VDG8iRTNo.XAbchxjzE2VT5Xhpten0au5sIxJvI9Wx6Vn8sYb-Mi4'
     );
   }
 );
