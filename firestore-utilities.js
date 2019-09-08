@@ -378,7 +378,9 @@ let dbutilities = (function() {
       if(donation_doc.data().owner.toLowerCase() != user.toLowerCase()) {
         return {status:500, message:"You don't have permission to edit that donation."}
       };
-      donation_doc.update({"matched": space_id});
+     // donation_doc.update({"matched": space_id});
+      fdb.collection("claimed_donations").doc(donation_id).set(donationRef.data());
+      donationRef.delete();
       space_doc.update( {
         "matches": admin.firestore.FieldValue.arrayUnion(donation_id)
       });
@@ -389,6 +391,17 @@ let dbutilities = (function() {
     }
   }
 
+  async function getUserDataProfile(user) {
+     userRef = fdb.collection("users").doc(user);
+     try {
+       let userDoc = await userRef.get();
+       if(!userDoc.exists) return {status: 500, message: "no such user"};
+       return {status: 200, message: "success", payload: userDoc.data()};
+     } catch (err) {
+      return {status: 500, message: err.message};
+     }
+  }
+
   return {
     db: fdb,
     addDonation: pushDonation,
@@ -397,6 +410,7 @@ let dbutilities = (function() {
     checkAuth: authUser,
     createUser: createNewUser,
     getDonations: getAllDonations,
+    getProfile: getUserDataProfile,
     getSpaces: getAllSpaces,
     getUsers: getAllUsers,
     getOneUsersSpaces: getUsersSpaces,
