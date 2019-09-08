@@ -1,5 +1,6 @@
 let dbutilities = (function() {
   const admin = require('firebase-admin');
+  const utils = require('./utils.js');
 
   let serviceAccount = require('./serviceAccountKey.json');
 
@@ -82,6 +83,12 @@ let dbutilities = (function() {
 
       var newToken = token();
       if (phonenumber) var phoneToken = rand();
+
+      await utils.sendVerificationEmail(user, newToken);
+
+      if (phonenumber) {
+        await utils.sendVerificationText(user, phonenumber, phoneToken);
+      }
 
       fdb
         .collection('users')
@@ -190,7 +197,6 @@ let dbutilities = (function() {
     }
   }
 
-  
   async function verifyUser(user, token) {
     const userRef = fdb.collection('users').doc(user.toLowerCase());
     try {
@@ -429,29 +435,27 @@ let dbutilities = (function() {
 
       for (var i in templateData.donations) {
         let id = templateData.donations[i];
-        let foodRef = fdb.collection("donations").doc(id);
+        let foodRef = fdb.collection('donations').doc(id);
         let foodDoc = await foodRef.get();
-        
-        if(!foodDoc.exists) {
-          let foodRef2 = fdb.collection("claimed_donations").doc(id);
+
+        if (!foodDoc.exists) {
+          let foodRef2 = fdb.collection('claimed_donations').doc(id);
           let foodDoc2 = await foodRef2.get();
           eventsArr.push(foodDoc2.data().append);
-          if(!foodDoc2.exists) continue;
+          if (!foodDoc2.exists) continue;
         } else {
           eventsArr.push(foodDoc.data());
         }
       }
-      
+
       for (var j in templateData.spaces) {
         let id = templateData.donations[i];
-        let spaceRef = fdb.collection("spaces").doc(id);
+        let spaceRef = fdb.collection('spaces').doc(id);
         let spaceDoc = await spaceRef.get();
-        if(spaceDoc.exists) 
-          eventsArr.push(spaceDoc.data());
+        if (spaceDoc.exists) eventsArr.push(spaceDoc.data());
       }
 
-      return { status: 200, message: 'success', 
-          payload: eventsArr};
+      return { status: 200, message: 'success', payload: eventsArr };
     } catch (err) {
       return { status: 500, message: err.message };
     }

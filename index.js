@@ -76,7 +76,7 @@ app.post('/api/v1/register', async function(req, res) {
     return res.send('Must provide username and password!');
 
   console.log(
-    `Creating account with username ${req.body.username}, password ${req.body.password}, and phone ${req.query.phoneNumber}...`
+    `Creating account with username ${req.body.username}, password ${req.body.password}, and phone ${req.body.phoneNumber}...`
   );
 
   let hashedPassword = await utils.hashPassword(req.body.password);
@@ -85,16 +85,6 @@ app.post('/api/v1/register', async function(req, res) {
     hashedPassword,
     req.body.phoneNumber ? req.body.phoneNumber : ''
   );
-
-  await utils.sendVerificationEmail(req.body.username, result.token);
-
-  if (req.body.phoneNumber) {
-    await utils.sendVerificationText(
-      req.body.username,
-      req.body.phoneNumber,
-      result.phoneToken
-    );
-  }
 
   res.send(result);
 });
