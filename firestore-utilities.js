@@ -190,6 +190,7 @@ let dbutilities = (function() {
     }
   }
 
+  
   async function verifyUser(user, token) {
     const userRef = fdb.collection('users').doc(user.toLowerCase());
     try {
@@ -249,7 +250,10 @@ let dbutilities = (function() {
     return await fdb.collection('spaces').get();
   }
 
+  //donation -> a JSON object containing the necessary information
+  //necessary information - longitude, latitude, ?
   async function pushDonation(user, token, donation) {
+    donation.is_food = true;
     auth = authUser(user, token);
     if (auth.status != 200) return auth;
 
@@ -267,7 +271,10 @@ let dbutilities = (function() {
     }
   }
 
+  //space -> a JSON object containing the necessary information
+  //necessary information - longitude, latitude, ?
   async function pushSpace(user, token, space) {
+    donation.is_food = false;
     auth = authUser(user, token);
     if (auth.status != 200) return auth;
     try {
@@ -368,6 +375,9 @@ let dbutilities = (function() {
     }
   }
 
+  //domain id - id for the domain
+  //space id - id for the space
+  //(using the keys from the FireStore)
   async function assignDonationToSpace(user, token, donation_id, space_id) {
     auth = authUser(user, token);
     if (auth.status != 200) return auth;
@@ -408,12 +418,40 @@ let dbutilities = (function() {
     }
   }
 
+  //using username, get their entire profile.
   async function getUserDataProfile(user) {
     userRef = fdb.collection('users').doc(user);
     try {
       let userDoc = await userRef.get();
       if (!userDoc.exists) return { status: 500, message: 'no such user' };
-      return { status: 200, message: 'success', payload: userDoc.data() };
+      let templateData = userDoc.data();
+      let eventsArr = [];
+
+      for (var i in templateData.donations) {
+        let id = templateData.donations[i];
+        let foodRef = fdb.collection("donations").doc(id);
+        let foodDoc = await foodRef.get();
+        
+        if(!foodDoc.exists) {
+          let foodRef2 = fdb.collection("claimed_donations").doc(id);
+          let foodDoc2 = await foodRef2.get();
+          eventsArr.push(foodDoc2.data().append);
+          if(!foodDoc2.exists) continue;
+        } else {
+          eventsArr.push(foodDoc.data());
+        }
+      }
+      
+      for (var j in templateData.spaces) {
+        let id = templateData.donations[i];
+        let spaceRef = fdb.collection("spaces").doc(id);
+        let spaceDoc = await spaceRef.get();
+        if(spaceDoc.exists) 
+        eventsArr.push(spaceDoc.data());
+      }
+
+      return { status: 200, message: 'success', 
+          payload: eventsArr};
     } catch (err) {
       return { status: 500, message: err.message };
     }
